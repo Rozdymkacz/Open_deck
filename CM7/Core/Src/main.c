@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
@@ -68,6 +69,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MPU_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 void usb_echo(void);
 int _write(int file, char* ptr, int len)
@@ -169,21 +171,21 @@ Error_Handler();
   MX_USB_OTG_HS_PCD_Init();
   /* USER CODE BEGIN 2 */
   printf("Project Open Deck\r\n");
-  //tinyUsb initialization
-  tusb_rhport_init_t dev_init = {
-    .role = TUSB_ROLE_DEVICE,
-    .speed = TUSB_SPEED_HIGH
-  };
-  tusb_init(1, &dev_init);
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in cmsis_os2.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    tud_task();
-    usb_echo();
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -253,41 +255,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void usb_echo(void)
-{
 
-  if (!tud_mounted())
-  {    
-    return;
-  }
-
-  if (!tud_cdc_available())
-  {
-    return;
-  }
-
-  char usb_rx_buf[64];
-  char tx_buffer[128];
-
-  uint32_t count = tud_cdc_read(usb_rx_buf, sizeof(usb_rx_buf) - 1);
-
-  if (count == 0)
-  {
-    return;
-  }
-
-  usb_rx_buf[count] = '\0';
-
-  int len = snprintf(
-    tx_buffer,
-    sizeof(tx_buffer),
-    "Hello from stm32, you sent: %s",
-    usb_rx_buf
-  );
-
-  tud_cdc_write(tx_buffer, len);
-  tud_cdc_write_flush();
-}
 /* USER CODE END 4 */
 
  /* MPU Configuration */
@@ -327,6 +295,28 @@ void MPU_Config(void)
   /* Enables the MPU */
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6)
+  {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
 }
 
 /**

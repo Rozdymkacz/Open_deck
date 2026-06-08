@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #define CFG_TUSB_MCU              OPT_MCU_STM32H7
-#define CFG_TUSB_OS               OPT_OS_NONE
+#define CFG_TUSB_OS               OPT_OS_FREERTOS
 
 // USB HS + external ULPI PHY (DWC2)
 #define CFG_TUSB_RHPORT1_MODE     (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
