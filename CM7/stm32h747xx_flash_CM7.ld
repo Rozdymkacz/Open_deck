@@ -39,6 +39,7 @@ ENTRY(Reset_Handler)
 MEMORY
 {
 FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K
+SRAM1 (xrw)    : ORIGIN = 0x30000000, LENGTH = 128K   /* SRAM1 */
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
 ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
 }
@@ -219,7 +220,13 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+  .SRAM1 (NOLOAD) :
+  {
+    . = ALIGN(32);
+    *(.SRAM1)
+    . = ALIGN(32);
+  } >SRAM1
+
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
