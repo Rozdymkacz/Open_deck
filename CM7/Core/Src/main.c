@@ -19,11 +19,17 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usart.h"
+#include "usb_otg.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "tusb.h"
+#include "usb_descriptors.h"
+#include "tusb_config.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <sys/_intsup.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +69,20 @@
 void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
+void usb_echo(void);
+int _write(int file, char* ptr, int len)
+{
+    (void) file;
 
+    HAL_UART_Transmit(
+        &huart1,
+        (uint8_t*) ptr,
+        len,
+        HAL_MAX_DELAY
+    );
+
+    return len;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -147,14 +166,24 @@ Error_Handler();
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_USB_OTG_HS_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  printf("Project Open Deck\r\n");
+  //tinyUsb initialization
+  tusb_rhport_init_t dev_init = {
+    .role = TUSB_ROLE_DEVICE,
+    .speed = TUSB_SPEED_HIGH
+  };
+  tusb_init(1, &dev_init);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    tud_task();
+    usb_echo();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -224,7 +253,41 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void usb_echo(void)
+{
 
+  if (!tud_mounted())
+  {    
+    return;
+  }
+
+  if (!tud_cdc_available())
+  {
+    return;
+  }
+
+  char usb_rx_buf[64];
+  char tx_buffer[128];
+
+  uint32_t count = tud_cdc_read(usb_rx_buf, sizeof(usb_rx_buf) - 1);
+
+  if (count == 0)
+  {
+    return;
+  }
+
+  usb_rx_buf[count] = '\0';
+
+  int len = snprintf(
+    tx_buffer,
+    sizeof(tx_buffer),
+    "Hello from stm32, you sent: %s",
+    usb_rx_buf
+  );
+
+  tud_cdc_write(tx_buffer, len);
+  tud_cdc_write_flush();
+}
 /* USER CODE END 4 */
 
  /* MPU Configuration */
