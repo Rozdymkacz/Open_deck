@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "crc.h"
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
@@ -169,6 +170,7 @@ Error_Handler();
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_USB_OTG_HS_PCD_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   printf("Project Open Deck\r\n");
   /* USER CODE END 2 */

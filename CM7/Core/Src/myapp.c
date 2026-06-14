@@ -10,6 +10,7 @@
 #include "cmsis_os2.h"
 #include "queue_typs.h"
 #include "app_queues.h"
+#include "usb_protocole/usb_protocole_parser.hpp"
 
 void my_usb_reception_data(void)
 {
@@ -36,6 +37,13 @@ void my_usb_reception_data(void)
   }
 
   msg.data[msg.len] = '\0';
+
+  bool result = UsbProtocol::parse(msg.data, msg.len);
+  if (!result)
+  {
+    printf("Unable to parse data\r\n");
+    return;
+  }
 
   osMessageQueuePut( usbRxQueueHandle,
     &msg,

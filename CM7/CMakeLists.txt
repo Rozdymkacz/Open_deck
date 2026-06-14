@@ -51,15 +51,19 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
 # Enable CMake support for ASM and C languages
 enable_language(C ASM)
 
+file(GLOB_RECURSE USER_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.cpp"
+)
+
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined include paths
+   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc"
 )
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    Core/Src/myapp.c
-    # Add user sources here
+    ${USER_SOURCES}
 )
 
 # Link directories setup
