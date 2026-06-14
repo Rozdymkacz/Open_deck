@@ -11,9 +11,6 @@
 #include "queue_typs.h"
 #include "app_queues.h"
 
-volatile uint32_t usb_send_calls = 0;
-volatile uint32_t usb_queue_dos = 0;
-
 void my_usb_reception_data(void)
 {
 
@@ -49,7 +46,6 @@ void my_usb_reception_data(void)
 void my_usb_send_data(void)
 {
 
-  usb_send_calls++;
   UsbMessage_t tx_msg;
 
   while (osMessageQueueGetCount(usbTxQueueHandle) > 0)
@@ -57,7 +53,6 @@ void my_usb_send_data(void)
     osStatus_t status = osMessageQueueGet(usbTxQueueHandle, &tx_msg, NULL, 0);
     if(!status == osOK) return;
 
-    usb_queue_dos++;
     uint32_t space = tud_cdc_write_available();
 
     if (space < tx_msg.len) {
@@ -110,81 +105,3 @@ void task_2500ms(void)
   osMessageQueuePut(usbTxQueueHandle, &tx_msg, 0, 0);
 
 }
-
-/*
-void my_cdc_task(void)
-{
-    
-    task_1000ms();
-    task_2500ms();
-
-    if (!tud_mounted())
-    {
-        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-        return;
-    }
-
-    HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-
-    if (!tud_cdc_available())
-    {
-        return;
-    }
-
-    char usb_rx_buf[64];
-    char tx_buffer[128];
-
-    uint32_t count = tud_cdc_read(usb_rx_buf, sizeof(usb_rx_buf) - 1);
-
-    if (count == 0)
-    {
-        return;
-    }
-
-    usb_rx_buf[count] = '\0';
-
-    int len = snprintf(
-        tx_buffer,
-        sizeof(tx_buffer),
-        "Hello from stm32, you sent: %s",
-        usb_rx_buf
-    );
-
-    tud_cdc_write(tx_buffer, len);
-    tud_cdc_write_flush();
-}
-
-
-void task_2500ms(void)
-{
-  static uint32_t last_time = 0;
-
-  if ((HAL_GetTick() - last_time) >= 2500)
-  {
-    last_time = HAL_GetTick();
-    
-    if (tud_mounted())
-    {
-      if (tud_cdc_write_available() >= 17)
-      {
-        tud_cdc_write("Hello from STM32\r\n", 17);
-        tud_cdc_write_flush();
-      }
-    }
-
-  }
-} //task_2500ms
-
-
-void task_1000ms(void)
-{
-  static uint32_t last_time = 0;
-
-  if ((HAL_GetTick() - last_time) >= 1000)
-  {
-    last_time = HAL_GetTick();
-    printf( "mounted=%u uavilable=%u \r\n", tud_mounted(), tud_cdc_available());
-  }
-
-}// task_1000ms
-*/
