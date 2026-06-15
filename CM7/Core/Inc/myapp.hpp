@@ -1,7 +1,5 @@
 //myapp.h
-
-#ifndef MYAPP_H
-#define MYAPP_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,4 +15,3 @@ void task_2500ms(void);
 }
 #endif
 
-#endif

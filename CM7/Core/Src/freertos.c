@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "myapp.h"
+#include "myapp.hpp"
 #include "tusb.h"
 /* USER CODE END Includes */
 

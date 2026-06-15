@@ -1,4 +1,4 @@
-#include "myapp.h"
+#include "myapp.hpp"
 
 #include "class/cdc/cdc_device.h"
 #include "main.h"
@@ -36,9 +36,11 @@ void my_usb_reception_data(void)
     return;
   }
 
+  bool result = UsbProtocol::parse(reinterpret_cast<uint8_t*>(msg.data), msg.len);
+
   msg.data[msg.len] = '\0';
 
-  bool result = UsbProtocol::parse(msg.data, msg.len);
+
   if (!result)
   {
     printf("Unable to parse data\r\n");

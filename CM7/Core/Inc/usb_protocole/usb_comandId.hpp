@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 enum class CommandId : uint16_t
 {
     Error            = 1,

@@ -36,7 +36,7 @@ extern "C" {
 #define CFG_TUD_VENDOR            0
 
 // Debug
-#define CFG_TUSB_DEBUG            3
+#define CFG_TUSB_DEBUG            0
 
 #ifdef __cplusplus
 }

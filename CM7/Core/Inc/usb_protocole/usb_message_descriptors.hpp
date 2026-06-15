@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdint.h>
+#include <stdio.h>
+
 struct __attribute__((packed)) Header
 {
     uint16_t protocolVersionMajor;
@@ -10,12 +13,11 @@ struct __attribute__((packed)) Header
     uint16_t payloadSize;
 };
 
-template<size_t PayloadSize>
 struct __attribute__((packed)) Packet
 {
     Header header;
 
-    uint8_t payload[PayloadSize];
+    uint8_t payload[500];
 
     uint32_t crc;
 };
