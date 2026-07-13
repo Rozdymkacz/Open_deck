@@ -36,15 +36,14 @@ void my_usb_reception_data(void)
     return;
   }
 
-  bool result = UsbProtocol::parse(reinterpret_cast<uint8_t*>(msg.data), msg.len);
-
-  msg.data[msg.len] = '\0';
-
+  bool result = UsbProtocolParser::parse(reinterpret_cast<uint8_t*>(msg.data), msg.len);
 
   if (!result)
   {
     printf("Unable to parse data\r\n");
-    return;
+    //return;
+  }else{
+    printf("Parsed data\r\n");
   }
 
   osMessageQueuePut( usbRxQueueHandle,

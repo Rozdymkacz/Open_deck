@@ -1,4 +1,4 @@
-//myapp.h
+//myapp.hpp
 #pragma once
 
 #ifdef __cplusplus

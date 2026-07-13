@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-class UsbProtocol
+class UsbProtocolParser
 {
 public:
 
@@ -19,16 +19,16 @@ private:
 
     static bool parseHeader(
         const uint8_t* data,
-        Header& header);
+        Header* header);
     
     static bool verifyLength(
-        const Header& header,
+        const Header* header,
         uint16_t length);
 
     static bool parsePacket(
         const uint8_t* data,
         uint16_t length,
-        Packet& packet);
+        Packet* packet);
 
     static bool verifyCRC(
         const uint8_t* data,

@@ -14,32 +14,36 @@
 
 constexpr uint16_t ProtocolVersionMajor = 0;
 constexpr uint16_t ProtocolVersionMinor = 1;
-constexpr uint16_t HeaderLength = sizeof(Packet::header);
-constexpr uint16_t CrcLength = sizeof(Packet::crc);
 
-bool UsbProtocol::parse( const uint8_t* data, uint16_t length)
+constexpr uint8_t HeaderLength = sizeof(Packet::header);
+constexpr uint16_t PayloadLength = sizeof(Packet::payload);
+constexpr uint8_t CrcLength = sizeof(Packet::crc);
+
+bool UsbProtocolParser::parse( const uint8_t* data, uint16_t length)
 {
 
-    if (length < sizeof(Packet::header) + sizeof(Packet::crc)) // Minimum size: header + CRC
+    if (length < HeaderLength + CrcLength) // Minimum size: header + CRC
     {
         return false;
     }
 
-    Header header;
+    static Header header;
+    memset(&header, 0, HeaderLength);
 
-    if (!parseHeader(data, header))
+    if (!parseHeader(data, &header))
     {
         return false;
     }
 
-    if (!verifyLength(header, length))
+    if (!verifyLength(&header, length))
     {
         return false;
     }
 
-    Packet packet;
+    static Packet packet;
+    memset(&packet, 0, sizeof(Packet));
 
-    if (!parsePacket(data, length, packet))
+    if (!parsePacket(data, length, &packet))
     {
         return false;
     }
@@ -52,32 +56,32 @@ bool UsbProtocol::parse( const uint8_t* data, uint16_t length)
     return dispatch(&packet);
 }
 
-bool UsbProtocol::parsePacket(const uint8_t* data, uint16_t length, Packet& packet)
+bool UsbProtocolParser::parsePacket(const uint8_t* data, uint16_t length, Packet* packet)
 {
     memcpy(
-        &packet.header,
+        &packet->header,
         data,
-        sizeof(Packet::header));
+        HeaderLength);
 
     memcpy(
-        packet.payload,
-        data + sizeof(Packet::header),
-        packet.header.payloadSize);
+        packet->payload,
+        data + HeaderLength,
+        packet->header.payloadSize);
 
     memcpy(
-        &packet.crc,
-        data + sizeof(Packet::header) + packet.header.payloadSize,
-        sizeof(packet.crc));
+        &packet->crc,
+        data + HeaderLength + packet->header.payloadSize,
+        CrcLength);
 
     return true;
 }
 
-bool UsbProtocol::parseHeader(const uint8_t* data, Header& header)
+bool UsbProtocolParser::parseHeader(const uint8_t* data, Header* header)
 {
-    memcpy(&header, data, sizeof(Packet::header));
+    memcpy(header, data, HeaderLength);
 
-    if (header.protocolVersionMajor != ProtocolVersionMajor ||
-        header.protocolVersionMinor != ProtocolVersionMinor)
+    if (header->protocolVersionMajor != ProtocolVersionMajor ||
+        header->protocolVersionMinor != ProtocolVersionMinor)
     {
         return false;
     }
@@ -85,13 +89,18 @@ bool UsbProtocol::parseHeader(const uint8_t* data, Header& header)
     return true;
 }
 
-bool UsbProtocol::verifyLength(const Header& header, uint16_t length)
+bool UsbProtocolParser::verifyLength(const Header* header, uint16_t length)
 {
-    uint32_t expectedLength = sizeof(Packet::header) + header.payloadSize + sizeof(Packet::crc);
+    if (length > sizeof(Packet))
+    {
+        return false;
+    }
+
+    uint32_t expectedLength = HeaderLength + header->payloadSize + CrcLength;
     return length == expectedLength;
 }
 
-bool UsbProtocol::verifyCRC(const uint8_t* data, uint16_t length)
+bool UsbProtocolParser::verifyCRC(const uint8_t* data, uint16_t length)
 {
     /* for debug
     uint32_t receivedCrc;
@@ -102,24 +111,20 @@ bool UsbProtocol::verifyCRC(const uint8_t* data, uint16_t length)
     return true;
 }
 
-uint32_t UsbProtocol::calculateCRC(const uint8_t* data, uint16_t length)
+uint32_t UsbProtocolParser::calculateCRC(const uint8_t* data, uint16_t length)
 {
 
     uint32_t crc = HAL_CRC_Calculate(&hcrc, (uint32_t*)data, length / sizeof(uint32_t));
     return crc;
 }
 
-bool UsbProtocol::dispatch(const Packet* packet)
+bool UsbProtocolParser::dispatch(const Packet* packet)
 {
     UsbMessage_t tx_msg;
     switch (static_cast<CommandId>(packet->header.commandId))
     {
         case CommandId::Ping:
-        memset(&tx_msg.data, 0, sizeof(tx_msg.data));
-            snprintf(
-                tx_msg.data,
-                sizeof(tx_msg.data),
-                "Received Ping Message\r\n");
+        printf("Received Ping command: %.*s\r\n", packet->header.payloadSize, packet->payload);
 
         break;
 
@@ -133,14 +138,6 @@ bool UsbProtocol::dispatch(const Packet* packet)
             printf("Received unknown command: %d\r\n", packet->header.commandId);
             return false; // Unknown command
     }
-
-    tx_msg.len = strlen(tx_msg.data);
-
-    osMessageQueuePut(
-    usbTxQueueHandle,
-    &tx_msg,
-    0,
-    0);
 
     return true;
 }
