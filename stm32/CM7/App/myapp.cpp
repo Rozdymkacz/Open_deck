@@ -1,3 +1,21 @@
+/**
+ * @file myapp.cpp
+ * @brief receiving and sending data from usb, and processing it
+ *
+ * @details
+ * This file contains the implementation of the first stage data processing for the application. 
+ * It includes functions for USB data reception, sending, and processing, as well as a periodic task that runs every 2500 milliseconds.
+ *
+ * @author Rozdymkacz
+ * @date 2026-07-15
+ *
+ * @copyright Copyright (c) 2026
+ *
+ * @todo
+ * - split into several files, one for each thread
+ * - improve data passing to the parser 
+ */
+
 #include "myapp.hpp"
 
 #include "class/cdc/cdc_device.h"
@@ -9,8 +27,8 @@
 #include "FreeRTOS.h"
 #include "cmsis_os2.h"
 #include "queue_typs.h"
-#include "app_queues.h"
-#include "usb_protocole/usb_protocole_parser.hpp"
+#include "fr_queues_externs.h"
+#include "usb/usb_protocole_parser.hpp"
 
 void my_usb_reception_data(void)
 {
@@ -36,7 +54,7 @@ void my_usb_reception_data(void)
     return;
   }
 
-  bool result = UsbProtocolParser::parse(reinterpret_cast<uint8_t*>(msg.data), msg.len);
+  bool result = od::UsbProtocolParser::parse(reinterpret_cast<uint8_t*>(msg.data), msg.len);
 
   if (!result)
   {

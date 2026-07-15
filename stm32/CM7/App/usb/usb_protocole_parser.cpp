@@ -1,19 +1,33 @@
-#include "usb_protocole/usb_protocole_parser.hpp"
+/**
+ * @file usb_protocole_parser.cpp
+ * @brief Parser for USB protocol data packets
+ *
+ * @details This file contains the implementation of the USB protocol parser class, which is responsible for parsing incoming USB data packets and dispatching them to the appropriate handlers.
+ *
+ * @author Rozdymkacz
+ * @date 2026-07-15
+ *
+ * @copyright Copyright (c) 2026
+ */
+#include "usb/usb_protocole_parser.hpp"
 
-#include "usb_protocole/usb_message_descriptors.hpp"
-#include "usb_protocole/usb_comandId.hpp"
+#include "usb/usb_message_descriptors.hpp"
+#include "usb/usb_commandId.hpp"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <cstring>
 #include "cmsis_os2.h"
 #include "queue_typs.h"
-#include "app_queues.h"
+#include "fr_queues_externs.h"
 #include "crc.h"
 #include "main.h"
 
-constexpr uint16_t ProtocolVersionMajor = 0;
-constexpr uint16_t ProtocolVersionMinor = 1;
+namespace od
+{
+
+constexpr uint16_t UsbProtocolVersionMajor = 0;
+constexpr uint16_t UsbProtocolVersionMinor = 1;
 
 constexpr uint8_t HeaderLength = sizeof(Packet::header);
 constexpr uint16_t PayloadLength = sizeof(Packet::payload);
@@ -80,8 +94,8 @@ bool UsbProtocolParser::parseHeader(const uint8_t* data, Header* header)
 {
     memcpy(header, data, HeaderLength);
 
-    if (header->protocolVersionMajor != ProtocolVersionMajor ||
-        header->protocolVersionMinor != ProtocolVersionMinor)
+    if (header->protocolVersionMajor != UsbProtocolVersionMajor ||
+        header->protocolVersionMinor != UsbProtocolVersionMinor)
     {
         return false;
     }
@@ -141,3 +155,5 @@ bool UsbProtocolParser::dispatch(const Packet* packet)
 
     return true;
 }
+
+}//namespace od
