@@ -85,49 +85,20 @@ if((CMAKE_C_STANDARD EQUAL 90) OR (CMAKE_C_STANDARD EQUAL 99))
 endif()
 
 # ============================================================
-# TINYUSB v0.20.0 + DWC2 (STM32H7) - FINAL FIX
+# TINYUSB from submodule
 # ============================================================
 
-set(TINYUSB_ROOT "E:/stm32/library/tinyusb/src")
-add_subdirectory(${TINYUSB_ROOT} ${CMAKE_BINARY_DIR}/tinyusb_build)
-
+#basic setup for tinyusb
+include(../external/tinyusb/src/CMakeLists.txt)
 tinyusb_target_add(${CMAKE_PROJECT_NAME})
 
-#  ŚCIEŻKA DO FOLDERU DWC2
-set(DWC2_DIR "${TINYUSB_ROOT}/../portable/synopsys/dwc2")
-if(NOT EXISTS "${DWC2_DIR}")
-    set(DWC2_DIR "${TINYUSB_ROOT}/portable/synopsys/dwc2")
-endif()
-
-if(NOT EXISTS "${DWC2_DIR}")
-    message(FATAL_ERROR "Folder DWC2 nie istnieje! Sprawdź ścieżkę do TinyUSB.")
-endif()
-
-# Dodaj WSZYSTKIE pliki .c z folderu DWC2 (dcd_dwc2.c + dwc2_core.c)
-file(GLOB DWC2_SOURCES "${DWC2_DIR}/*.c")
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${DWC2_SOURCES})
-
-# Twoje deskryptory
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/usb_descriptors.c
-)
-
-# Include'y
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc   # tusb_config.h + usb_descriptors.h
-    ${DWC2_DIR}                            # nagłówki DWC2
-)
-
-# Definicje
-target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-    CFG_TUSB_MCU=OPT_MCU_STM32H7
-    "CFG_TUSB_RHPORT0_MODE=(OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)"
-    CFG_TUD_CDC=1
-)
-
-
-
-
+# Add sources for the Synopsys DWC2 driver. 
+# not added by default because it is not needed for all targets, but it is needed for the STM32H7 series.
+target_sources(${CMAKE_PROJECT_NAME} PUBLIC
+    ../external/tinyusb/src/portable/synopsys/dwc2/dcd_dwc2.c
+    ../external/tinyusb/src/portable/synopsys/dwc2/hcd_dwc2.c
+    ../external/tinyusb/src/portable/synopsys/dwc2/dwc2_common.c
+    )
 
 
 

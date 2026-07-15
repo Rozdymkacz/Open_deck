@@ -26,12 +26,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "tusb.h"
 #include "usb_descriptors.h"
 #include "tusb_config.h"
 #include <stdint.h>
 #include <stdio.h>
-#include <sys/_intsup.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

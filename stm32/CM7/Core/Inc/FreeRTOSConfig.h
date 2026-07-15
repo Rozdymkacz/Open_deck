@@ -167,6 +167,11 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+// TinyUSB requires a tick-to-millisecond conversion macro.
+// FreeRTOS does not provide pdTICKS_TO_MS by default, so it is defined here.
+#ifndef pdTICKS_TO_MS
+  #define pdTICKS_TO_MS(x) ((TickType_t)(((uint32_t)(x) * 1000U) / configTICK_RATE_HZ))
+#endif
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */
